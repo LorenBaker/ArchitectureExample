@@ -17,7 +17,7 @@ import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.WriteBatch;
-import com.lbconsulting.architectureexample.models.Note2;
+import com.lbconsulting.architectureexample.models.Note;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -38,8 +38,8 @@ public class Note2Repository {
     private final String mUserUid = "gEwXzgGLnhdOLsFiLLlLKGIHyyB2";
 
     private final String mNotesCollectionPath = USERS_COLLECTION + "/" + mUserUid + "/" + NOTES_COLLECTION;
-    private final List<Note2> mNotes = new ArrayList<>();
-    private final MutableLiveData<List<Note2>> mLiveData = new MutableLiveData<>();
+    private final List<Note> mNotes = new ArrayList<>();
+    private final MutableLiveData<List<Note>> mLiveData = new MutableLiveData<>();
     private final Query mAllNotesQuery = db.collection(mNotesCollectionPath)
             .orderBy("priority", Query.Direction.ASCENDING)
             .orderBy("title", Query.Direction.ASCENDING);
@@ -65,7 +65,7 @@ public class Note2Repository {
             int number = i + 1;
             String title = String.format(Locale.getDefault(), "Title %02d", number);
             String description = String.format(Locale.getDefault(), "Description %02d", number);
-            Note2 note = new Note2(title, description, priority);
+            Note note = new Note(title, description, priority);
 
             noteRef = db.collection(mNotesCollectionPath).document();
             uid = noteRef.getId();
@@ -88,7 +88,7 @@ public class Note2Repository {
     }
 
 
-    public LiveData<List<Note2>> getAllNotes() {
+    public LiveData<List<Note>> getAllNotes() {
         Timber.i("getAllNotes()");
 
         mAllNotesEventListener = mAllNotesQuery.addSnapshotListener(new EventListener<QuerySnapshot>() {
@@ -102,7 +102,7 @@ public class Note2Repository {
                 if (snapshots != null) {
                     Timber.i("allNotesEventListener: %d snapshots changed.", snapshots.getDocumentChanges().size());
                     for (DocumentChange dc : snapshots.getDocumentChanges()) {
-                        Note2 note = dc.getDocument().toObject(Note2.class);
+                        Note note = dc.getDocument().toObject(Note.class);
 
                         switch (dc.getType()) {
                             case ADDED:
@@ -143,7 +143,7 @@ public class Note2Repository {
         }
     }
 
-    public void insert(@NotNull final Note2 note) {
+    public void insert(@NotNull final Note note) {
         Timber.i("insert(): Note \"%s\"", note.getTitle());
 
         DocumentReference newNoteRef = db.collection(mNotesCollectionPath).document();
@@ -168,7 +168,7 @@ public class Note2Repository {
 
     }
 
-    public void update(@NotNull final Note2 note) {
+    public void update(@NotNull final Note note) {
         Timber.i("update(): Note \"%s\"", note.getTitle());
 
         if (note.getUid() != null && !note.getUid().isEmpty()) {
@@ -193,7 +193,7 @@ public class Note2Repository {
         }
     }
 
-    public void delete(@NotNull final Note2 note) {
+    public void delete(@NotNull final Note note) {
         Timber.i("delete(): Note \"%s\"", note.getTitle());
         DocumentReference noteRef = db.collection(mNotesCollectionPath).document(note.getUid());
 
@@ -228,7 +228,7 @@ public class Note2Repository {
         }
 
         DocumentReference noteRef;
-        Note2 note;
+        Note note;
 
         for (int i = 0; i < numberOfNotes; i++) {
             note = mNotes.get(i);

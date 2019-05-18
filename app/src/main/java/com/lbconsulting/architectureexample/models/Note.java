@@ -3,17 +3,18 @@ package com.lbconsulting.architectureexample.models;
 import com.google.gson.Gson;
 
 
-public class Note2 {
+public class Note {
 
     private String uid;
     private String title;
     private String description;
     private int priority;
 
-    public Note2() {
+    public Note() {
 
     }
-    public Note2(String title, String description, int priority) {
+
+    public Note(String title, String description, int priority) {
         this.title = title;
         this.description = description;
         this.priority = priority;
@@ -51,13 +52,13 @@ public class Note2 {
         this.priority = priority;
     }
 
-    public static String toJson(Note2 note) {
+    public static String toJson(Note note) {
         Gson gson = new Gson();
         return gson.toJson(note);
     }
 
-    public static Note2 fromJson(String noteJson) {
+    public static Note fromJson(String noteJson) {
         Gson gson = new Gson();
-        return gson.fromJson(noteJson, Note2.class);
+        return gson.fromJson(noteJson, Note.class);
     }
 }

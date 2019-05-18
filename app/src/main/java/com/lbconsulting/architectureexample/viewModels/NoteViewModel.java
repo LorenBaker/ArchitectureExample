@@ -5,33 +5,33 @@ import android.app.Application;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 
-import com.lbconsulting.architectureexample.models.Note2;
+import com.lbconsulting.architectureexample.models.Note;
 import com.lbconsulting.architectureexample.repositories.Note2Repository;
 
 import java.util.List;
 
 import timber.log.Timber;
 
-public class Note2ViewModel extends AndroidViewModel {
+public class NoteViewModel extends AndroidViewModel {
     private final Note2Repository repository;
-    private final LiveData<List<Note2>> allNotes;
+    private final LiveData<List<Note>> allNotes;
 
-    public Note2ViewModel(Application application) {
+    public NoteViewModel(Application application) {
         super(application);
-        Timber.i("Note2ViewModel initialized.");
+        Timber.i("NoteViewModel initialized.");
         repository = new Note2Repository(false);
         allNotes = repository.getAllNotes();
     }
 
-    public void insert(Note2 note) {
+    public void insert(Note note) {
         repository.insert(note);
     }
 
-    public void update(Note2 note) {
+    public void update(Note note) {
         repository.update(note);
     }
 
-    public void delete(Note2 note) {
+    public void delete(Note note) {
         repository.delete(note);
     }
 
@@ -39,7 +39,7 @@ public class Note2ViewModel extends AndroidViewModel {
         repository.deleteAllNotes();
     }
 
-    public LiveData<List<Note2>> getAllNotes() {
+    public LiveData<List<Note>> getAllNotes() {
         return allNotes;
     }
 

@@ -19,9 +19,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.lbconsulting.architectureexample.R;
-import com.lbconsulting.architectureexample.models.Note2;
-import com.lbconsulting.architectureexample.ui.adapters.Note2Adapter;
-import com.lbconsulting.architectureexample.viewModels.Note2ViewModel;
+import com.lbconsulting.architectureexample.models.Note;
+import com.lbconsulting.architectureexample.ui.adapters.NoteAdapter;
+import com.lbconsulting.architectureexample.viewModels.NoteViewModel;
 
 import java.util.List;
 
@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
     public static final int ADD_NOTE_REQUEST = 10;
     public static final int EDIT_NOTE_REQUEST = 20;
 
-    private Note2ViewModel note2ViewModel;
+    private NoteViewModel note2ViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,14 +56,14 @@ public class MainActivity extends AppCompatActivity {
         rvNotes.setLayoutManager(new LinearLayoutManager(this));
         rvNotes.setHasFixedSize(true);
 
-        final Note2Adapter adapter = new Note2Adapter();
+        final NoteAdapter adapter = new NoteAdapter();
         rvNotes.setAdapter(adapter);
 
-        note2ViewModel = ViewModelProviders.of(this).get(Note2ViewModel.class);
-        note2ViewModel.getAllNotes().observe(this, new Observer<List<Note2>>() {
+        note2ViewModel = ViewModelProviders.of(this).get(NoteViewModel.class);
+        note2ViewModel.getAllNotes().observe(this, new Observer<List<Note>>() {
 
             @Override
-            public void onChanged(List<Note2> notes) {
+            public void onChanged(List<Note> notes) {
                 // update UI (i.e.: the RecyclerView)
                 adapter.setNotes(notes);
             }
@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
                 int positon = viewHolder.getAdapterPosition();
-                Note2 note = adapter.getNoteAt(positon);
+                Note note = adapter.getNoteAt(positon);
                 if (note != null) {
                     note2ViewModel.delete(note);
                     Toast.makeText(MainActivity.this, String.format("Note \"%s\" deleted.", note.getTitle()), Toast.LENGTH_SHORT).show();
@@ -87,11 +87,11 @@ public class MainActivity extends AppCompatActivity {
             }
         }).attachToRecyclerView(rvNotes);
 
-        adapter.setOnNoteClickListener(new Note2Adapter.onNoteClickListener() {
+        adapter.setOnNoteClickListener(new NoteAdapter.onNoteClickListener() {
             @Override
-            public void onNoteClick(Note2 note, int position) {
+            public void onNoteClick(Note note, int position) {
                 Intent intent = new Intent(MainActivity.this, AddEditNoteActivity.class);
-                intent.putExtra(AddEditNoteActivity.NOTE_JSON, Note2.toJson(note));
+                intent.putExtra(AddEditNoteActivity.NOTE_JSON, Note.toJson(note));
                 startActivityForResult(intent, EDIT_NOTE_REQUEST);
             }
         });
@@ -106,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
         if (data != null) {
             if (data.hasExtra(AddEditNoteActivity.NOTE_JSON)) {
                 String noteJson = data.getStringExtra(AddEditNoteActivity.NOTE_JSON);
-                Note2 note = Note2.fromJson(noteJson);
+                Note note = Note.fromJson(noteJson);
                 if (requestCode == ADD_NOTE_REQUEST && resultCode == RESULT_OK) {
                     note2ViewModel.insert(note);
                     Toast.makeText(this, String.format(

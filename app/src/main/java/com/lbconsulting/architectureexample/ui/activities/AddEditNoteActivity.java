@@ -12,7 +12,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.lbconsulting.architectureexample.R;
-import com.lbconsulting.architectureexample.models.Note2;
+import com.lbconsulting.architectureexample.models.Note;
 
 import java.util.Objects;
 
@@ -26,7 +26,7 @@ public class AddEditNoteActivity extends AppCompatActivity {
     private NumberPicker npPriority;
     private boolean noteExists = false;
 
-    private Note2 mNote;
+    private Note mNote;
 
 
     @Override
@@ -48,7 +48,7 @@ public class AddEditNoteActivity extends AppCompatActivity {
 
         if (intent.hasExtra(NOTE_JSON)) {
             String noteJson = intent.getStringExtra(NOTE_JSON);
-            mNote = Note2.fromJson(noteJson);
+            mNote = Note.fromJson(noteJson);
             if (mNote != null) {
                 noteExists = true;
                 txtTitle.setText(mNote.getTitle());
@@ -113,7 +113,7 @@ public class AddEditNoteActivity extends AppCompatActivity {
         Intent noteIntent = new Intent();
 
         if (!noteExists) {
-            mNote = new Note2(title, description, priority);
+            mNote = new Note(title, description, priority);
 
         } else {
             mNote.setTitle(title);
@@ -121,7 +121,7 @@ public class AddEditNoteActivity extends AppCompatActivity {
             mNote.setPriority(priority);
         }
 
-        noteIntent.putExtra(NOTE_JSON, Note2.toJson(mNote));
+        noteIntent.putExtra(NOTE_JSON, Note.toJson(mNote));
         setResult(RESULT_OK, noteIntent);
         finish();
 
