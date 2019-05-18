@@ -29,7 +29,7 @@ import javax.annotation.Nullable;
 
 import timber.log.Timber;
 
-public class Note2Repository {
+public class FirestoreNoteRepository {
     private static final String USERS_COLLECTION = "users";
     private static final String NOTES_COLLECTION = "notes";
 
@@ -45,8 +45,8 @@ public class Note2Repository {
             .orderBy("title", Query.Direction.ASCENDING);
     private ListenerRegistration mAllNotesEventListener;
 
-    public Note2Repository(boolean populateFirestoreDb) {
-        Timber.i("Note2Repository initialized.");
+    public FirestoreNoteRepository(boolean populateFirestoreDb) {
+        Timber.i("FirestoreNoteRepository initialized.");
         if (populateFirestoreDb) {
             populateFirestoreDatabase();
         }

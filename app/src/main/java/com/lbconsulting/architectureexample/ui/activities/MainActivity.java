@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
 
-//        noteRepository2 = new Note2Repository(userUid, true);
+//        noteRepository2 = new FirestoreNoteRepository(userUid, true);
 
         FloatingActionButton fabAddNote = findViewById(R.id.fabAddNote);
         fabAddNote.setOnClickListener(new View.OnClickListener() {
@@ -96,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-//    private Note2Repository noteRepository2;
+//    private FirestoreNoteRepository noteRepository2;
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {

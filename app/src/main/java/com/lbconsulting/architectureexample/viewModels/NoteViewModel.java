@@ -6,20 +6,20 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 
 import com.lbconsulting.architectureexample.models.Note;
-import com.lbconsulting.architectureexample.repositories.Note2Repository;
+import com.lbconsulting.architectureexample.repositories.FirestoreNoteRepository;
 
 import java.util.List;
 
 import timber.log.Timber;
 
 public class NoteViewModel extends AndroidViewModel {
-    private final Note2Repository repository;
+    private final FirestoreNoteRepository repository;
     private final LiveData<List<Note>> allNotes;
 
     public NoteViewModel(Application application) {
         super(application);
         Timber.i("NoteViewModel initialized.");
-        repository = new Note2Repository(false);
+        repository = new FirestoreNoteRepository(false);
         allNotes = repository.getAllNotes();
     }
 
