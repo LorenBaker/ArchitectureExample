@@ -9,7 +9,6 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.RecyclerView.Adapter;
 
-import com.lbconsulting.architectureexample.Note;
 import com.lbconsulting.architectureexample.R;
 import com.lbconsulting.architectureexample.models.Note2;
 

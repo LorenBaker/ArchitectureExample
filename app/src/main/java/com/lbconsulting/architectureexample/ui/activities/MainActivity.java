@@ -18,13 +18,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.lbconsulting.architectureexample.Note;
-import com.lbconsulting.architectureexample.NoteViewModel;
 import com.lbconsulting.architectureexample.R;
 import com.lbconsulting.architectureexample.models.Note2;
-import com.lbconsulting.architectureexample.repositories.Note2Repository;
 import com.lbconsulting.architectureexample.ui.adapters.Note2Adapter;
-import com.lbconsulting.architectureexample.ui.adapters.NoteAdapter;
 import com.lbconsulting.architectureexample.viewModels.Note2ViewModel;
 
 import java.util.List;
@@ -35,7 +31,6 @@ public class MainActivity extends AppCompatActivity {
     public static final int ADD_NOTE_REQUEST = 10;
     public static final int EDIT_NOTE_REQUEST = 20;
 
-//    private NoteViewModel noteViewModel;
     private Note2ViewModel note2ViewModel;
 
     @Override
@@ -73,15 +68,6 @@ public class MainActivity extends AppCompatActivity {
                 adapter.setNotes(notes);
             }
         });
-
-//        noteViewModel = ViewModelProviders.of(this).get(NoteViewModel.class);
-//        noteViewModel.getAllNotes().observe(this, new Observer<List<Note>>() {
-//            @Override
-//            public void onChanged(List<Note> notes) {
-//                // update UI (i.e.: the RecyclerView)
-//                adapter.setNotes(notes);
-//            }
-//        });
 
         new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0,
                 ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
