@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">Architecture Example</string>
+    <string name="menu_delete_all_notes_title">Delete All Notes</string>
+    <string name="menu_save_note_title">Save</string>
+    <string name="noteItem_tvDescription_text">Description</string>
+    <string name="noteItem_tvPriority_text">1</string>
+    <string name="noteItem_tvTitle_text">Title</string>
+    <string name="tvPriority_text">Priority</string>
+    <string name="txtDescription_hint">Description</string>
+    <string name="txtTitle_hint">Title</string>
 </resources>

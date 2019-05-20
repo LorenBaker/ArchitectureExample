@@ -5,16 +5,24 @@ import android.app.Application;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 
+import com.lbconsulting.architectureexample.models.FirestoreListenerResult;
 import com.lbconsulting.architectureexample.models.Note;
 import com.lbconsulting.architectureexample.repositories.FirestoreNoteRepository;
 
-import java.util.List;
-
 import timber.log.Timber;
 
+
+/**
+ * The ViewModel provides the data for the app's RecyclerView.
+ * It initializes the FirestoreNoteRepository.
+ *
+ * @author Loren Baker
+ * @version 1.0
+ * Date: 5/19/2019
+ */
 public class NoteViewModel extends AndroidViewModel {
     private final FirestoreNoteRepository repository;
-    private final LiveData<List<Note>> allNotes;
+    private final LiveData<FirestoreListenerResult> allNotes;
 
     public NoteViewModel(Application application) {
         super(application);
@@ -39,7 +47,7 @@ public class NoteViewModel extends AndroidViewModel {
         repository.deleteAllNotes();
     }
 
-    public LiveData<List<Note>> getAllNotes() {
+    public LiveData<FirestoreListenerResult> getAllNotes() {
         return allNotes;
     }
 

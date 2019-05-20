@@ -18,6 +18,13 @@ import java.util.Objects;
 
 import timber.log.Timber;
 
+/**
+ * This Activity provides user input that inserts (creates) a new Note or edits and an existing Note.
+ *
+ * @author Loren Baker
+ * @version 1.0
+ * Date: 5/19/2019
+ */
 public class AddEditNoteActivity extends AppCompatActivity {
     public static final String NOTE_JSON = "NOTE_JSON";
 
@@ -27,7 +34,6 @@ public class AddEditNoteActivity extends AppCompatActivity {
     private boolean noteExists = false;
 
     private Note mNote;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,7 +110,6 @@ public class AddEditNoteActivity extends AppCompatActivity {
         String description = txtDescription.getText().toString().trim();
         int priority = npPriority.getValue();
 
-
         if (title.isEmpty() || description.isEmpty()) {
             Toast.makeText(this, "Neither Title nor Description can be empty.", Toast.LENGTH_SHORT).show();
             return;
@@ -124,7 +129,6 @@ public class AddEditNoteActivity extends AppCompatActivity {
         noteIntent.putExtra(NOTE_JSON, Note.toJson(mNote));
         setResult(RESULT_OK, noteIntent);
         finish();
-
     }
 
     @Override
@@ -136,16 +140,10 @@ public class AddEditNoteActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.save_note:
-                saveNote();
-                return true;
-
-            default:
-                return super.onOptionsItemSelected(item);
-
+        if (item.getItemId() == R.id.save_note) {
+            saveNote();
+            return true;
         }
+        return super.onOptionsItemSelected(item);
     }
-
-
 }

@@ -19,29 +19,27 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.lbconsulting.architectureexample.R;
+import com.lbconsulting.architectureexample.models.FirestoreListenerResult;
 import com.lbconsulting.architectureexample.models.Note;
+import com.lbconsulting.architectureexample.models.NotificationAction;
 import com.lbconsulting.architectureexample.ui.adapters.NoteAdapter;
 import com.lbconsulting.architectureexample.viewModels.NoteViewModel;
-
-import java.util.List;
 
 import timber.log.Timber;
 
 public class MainActivity extends AppCompatActivity {
-    public static final int ADD_NOTE_REQUEST = 10;
-    public static final int EDIT_NOTE_REQUEST = 20;
+    private static final int ADD_NOTE_REQUEST = 10;
+    private static final int EDIT_NOTE_REQUEST = 20;
 
-    private NoteViewModel note2ViewModel;
+    private NoteViewModel noteViewModel;
+    private LinearLayoutManager layoutManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //android.util.Log.i(TAG, "onCreate: ");
         Timber.i("onCreate()");
         setContentView(R.layout.activity_main);
 
-
-//        noteRepository2 = new FirestoreNoteRepository(userUid, true);
 
         FloatingActionButton fabAddNote = findViewById(R.id.fabAddNote);
         fabAddNote.setOnClickListener(new View.OnClickListener() {
@@ -53,20 +51,31 @@ public class MainActivity extends AppCompatActivity {
         });
 
         RecyclerView rvNotes = findViewById(R.id.rvNotes);
-        rvNotes.setLayoutManager(new LinearLayoutManager(this));
+        layoutManager = new LinearLayoutManager(this);
+        rvNotes.setLayoutManager(layoutManager);
         rvNotes.setHasFixedSize(true);
 
         final NoteAdapter adapter = new NoteAdapter();
         rvNotes.setAdapter(adapter);
 
-        note2ViewModel = ViewModelProviders.of(this).get(NoteViewModel.class);
-        note2ViewModel.getAllNotes().observe(this, new Observer<List<Note>>() {
-
+        noteViewModel = ViewModelProviders.of(this).get(NoteViewModel.class);
+        noteViewModel.getAllNotes().observe(this, new Observer<FirestoreListenerResult>() {
             @Override
-            public void onChanged(List<Note> notes) {
+            public void onChanged(FirestoreListenerResult result) {
                 // update UI (i.e.: the RecyclerView)
-                adapter.setNotes(notes);
+                adapter.setFirestoreListenerResult(result);
+                if (result.getNotificationAction().getAction().equals(NotificationAction.ACTION_MOVED)) {
+                    Timber.i("getAllNotes.observe(): Modified Note Moved: Scrolling to position=%d", result.getNotificationAction().getNewIndex());
+                    layoutManager.scrollToPositionWithOffset(result.getNotificationAction().getNewIndex(), 150);
+                }
             }
+//
+//            @Override
+//            public void onChanged(FirestoreListenerResult result) {
+//                // update UI (i.e.: the RecyclerView)
+//                adapter.setFirestoreListenerResult(result);
+//            }
+
         });
 
         new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0,
@@ -78,10 +87,10 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-                int positon = viewHolder.getAdapterPosition();
-                Note note = adapter.getNoteAt(positon);
+                int position = viewHolder.getAdapterPosition();
+                Note note = adapter.getNote(position);
                 if (note != null) {
-                    note2ViewModel.delete(note);
+                    noteViewModel.delete(note);
                     Toast.makeText(MainActivity.this, String.format("Note \"%s\" deleted.", note.getTitle()), Toast.LENGTH_SHORT).show();
                 }
             }
@@ -96,7 +105,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-//    private FirestoreNoteRepository noteRepository2;
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -108,16 +116,18 @@ public class MainActivity extends AppCompatActivity {
                 String noteJson = data.getStringExtra(AddEditNoteActivity.NOTE_JSON);
                 Note note = Note.fromJson(noteJson);
                 if (requestCode == ADD_NOTE_REQUEST && resultCode == RESULT_OK) {
-                    note2ViewModel.insert(note);
-                    Toast.makeText(this, String.format(
-                            "Note \"%s\" inserted.", note.getTitle()),
-                            Toast.LENGTH_SHORT).show();
+                    noteViewModel.insert(note);
+                    Timber.i("onActivityResult(): Note \"%s\" inserted.", note.getTitle());
+//                    Toast.makeText(this, String.format(
+//                            "Note \"%s\" inserted.", note.getTitle()),
+//                            Toast.LENGTH_SHORT).show();
 
                 } else if (requestCode == EDIT_NOTE_REQUEST && resultCode == RESULT_OK) {
-                    note2ViewModel.update(note);
-                    Toast.makeText(this, String.format(
-                            "Note \"%s\" updated.", note.getTitle()),
-                            Toast.LENGTH_SHORT).show();
+                    noteViewModel.update(note);
+                    Timber.i("onActivityResult()L Note \"%s\" updated.", note.getTitle());
+//                    Toast.makeText(this, String.format(
+//                            "Note \"%s\" updated.", note.getTitle()),
+//                            Toast.LENGTH_SHORT).show();
 
                 } else {
                     Toast.makeText(this, "Save note canceled.", Toast.LENGTH_SHORT).show();
@@ -175,15 +185,12 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.delete_all_notes:
-                note2ViewModel.deleteAllNotes();
-                Toast.makeText(this, "All notes deleted.", Toast.LENGTH_SHORT).show();
-                return true;
-
-            default:
-                return super.onOptionsItemSelected(item);
+        if (item.getItemId() == R.id.delete_all_notes) {
+            noteViewModel.deleteAllNotes();
+            Toast.makeText(this, "All notes deleted.", Toast.LENGTH_SHORT).show();
+            return true;
         }
+        return super.onOptionsItemSelected(item);
 
     }
 }

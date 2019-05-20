@@ -17,7 +17,9 @@ import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.WriteBatch;
+import com.lbconsulting.architectureexample.models.FirestoreListenerResult;
 import com.lbconsulting.architectureexample.models.Note;
+import com.lbconsulting.architectureexample.models.NotificationAction;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -35,14 +37,18 @@ public class FirestoreNoteRepository {
 
     // Access a Cloud Firestore instance
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+    // Hard coded userUid
+    // TODO: 2019-05-19 Get userUid from Firebase
+    @SuppressWarnings("SpellCheckingInspection")
     private final String mUserUid = "gEwXzgGLnhdOLsFiLLlLKGIHyyB2";
 
     private final String mNotesCollectionPath = USERS_COLLECTION + "/" + mUserUid + "/" + NOTES_COLLECTION;
     private final List<Note> mNotes = new ArrayList<>();
-    private final MutableLiveData<List<Note>> mLiveData = new MutableLiveData<>();
+    private final MutableLiveData<FirestoreListenerResult> mLiveData = new MutableLiveData<>();
     private final Query mAllNotesQuery = db.collection(mNotesCollectionPath)
             .orderBy("priority", Query.Direction.ASCENDING)
-            .orderBy("title", Query.Direction.ASCENDING);
+            .orderBy("titleSortKey", Query.Direction.ASCENDING);
     private ListenerRegistration mAllNotesEventListener;
 
     public FirestoreNoteRepository(boolean populateFirestoreDb) {
@@ -52,6 +58,9 @@ public class FirestoreNoteRepository {
         }
     }
 
+    /**
+     * This function adds Notes to the Firestore database.
+     */
     private void populateFirestoreDatabase() {
         Timber.i("populateFirestoreDatabase()");
         // Get a new write batch
@@ -87,8 +96,15 @@ public class FirestoreNoteRepository {
         });
     }
 
-
-    public LiveData<List<Note>> getAllNotes() {
+    /**
+     * This getAllNotes() function initializes the Firestore EventListener that listens
+     * for changes in the user's Firestore notes collection.
+     *
+     * @return A FirestoreListenerResult object. This function takes the EventListener's "added", "modified",
+     * or "removed" types and converts them to the NoteAdapter's "changed", "inserted", "moved", or
+     * "removed" actions. It also contains the updated Note's old and new RecyclerView position index.
+     */
+    public LiveData<FirestoreListenerResult> getAllNotes() {
         Timber.i("getAllNotes()");
 
         mAllNotesEventListener = mAllNotesQuery.addSnapshotListener(new EventListener<QuerySnapshot>() {
@@ -103,11 +119,15 @@ public class FirestoreNoteRepository {
                     Timber.i("allNotesEventListener: %d snapshots changed.", snapshots.getDocumentChanges().size());
                     for (DocumentChange dc : snapshots.getDocumentChanges()) {
                         Note note = dc.getDocument().toObject(Note.class);
+                        NotificationAction action;
+                        FirestoreListenerResult result;
 
                         switch (dc.getType()) {
                             case ADDED:
                                 mNotes.add(dc.getNewIndex(), note);
-                                mLiveData.setValue(mNotes);
+                                action = new NotificationAction(NotificationAction.ADDED, dc.getOldIndex(), dc.getNewIndex());
+                                result = new FirestoreListenerResult(action, mNotes);
+                                mLiveData.setValue(result);
                                 Timber.i("allNotesEventListener: Note \"%s\" ADDED at index=%d.",
                                         note.getTitle(), dc.getNewIndex());
                                 break;
@@ -115,14 +135,18 @@ public class FirestoreNoteRepository {
                             case MODIFIED:
                                 mNotes.remove(dc.getOldIndex());
                                 mNotes.add(dc.getNewIndex(), note);
-                                mLiveData.setValue(mNotes);
+                                action = new NotificationAction(NotificationAction.MODIFIED, dc.getOldIndex(), dc.getNewIndex());
+                                result = new FirestoreListenerResult(action, mNotes);
+                                mLiveData.setValue(result);
                                 Timber.i("allNotesEventListener: Note \"%s\" MODIFIED. Removed Note at index=%d. Added Note at index=%d.",
                                         note.getTitle(), dc.getOldIndex(), dc.getNewIndex());
                                 break;
 
                             case REMOVED:
                                 mNotes.remove(dc.getOldIndex());
-                                mLiveData.setValue(mNotes);
+                                action = new NotificationAction(NotificationAction.REMOVED, dc.getOldIndex(), dc.getNewIndex());
+                                result = new FirestoreListenerResult(action, mNotes);
+                                mLiveData.setValue(result);
                                 Timber.i("allNotesEventListener: Note \"%s\" REMOVED at index=%d.",
                                         note.getTitle(), dc.getOldIndex());
                                 break;
@@ -132,7 +156,6 @@ public class FirestoreNoteRepository {
             }
         });
 
-        mLiveData.setValue(mNotes);
         return mLiveData;
     }
 

@@ -7,17 +7,28 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.RecyclerView.Adapter;
 
 import com.lbconsulting.architectureexample.R;
+import com.lbconsulting.architectureexample.models.FirestoreListenerResult;
 import com.lbconsulting.architectureexample.models.Note;
+import com.lbconsulting.architectureexample.models.NotificationAction;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class NoteAdapter extends Adapter<NoteAdapter.NoteHolder> {
+import timber.log.Timber;
+
+/**
+ * This Adapter populates a RecyclerView with Note items.
+ *
+ * @author Loren Baker
+ * @version 1.0
+ * Date: 5/19/2019
+ */
+public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteHolder> {
     private List<Note> notes = new ArrayList<>();
     private onNoteClickListener mListener;
+
 
     @NonNull
     @Override
@@ -33,7 +44,6 @@ public class NoteAdapter extends Adapter<NoteAdapter.NoteHolder> {
         Note currentNote = notes.get(position);
         holder.tvTitle.setText(currentNote.getTitle());
         holder.tvDescription.setText(currentNote.getDescription());
-//        holder.tvDescription.setText(currentNote.toString());
         holder.tvPriority.setText(String.valueOf(currentNote.getPriority()));
     }
 
@@ -42,21 +52,52 @@ public class NoteAdapter extends Adapter<NoteAdapter.NoteHolder> {
         return notes.size();
     }
 
-    public void setNotes(List<Note> notes) {
-        this.notes = notes;
-        notifyDataSetChanged();
+    /**
+     * The RecyclerView updates the UI via this setFirestoreListenerResult function.
+     *
+     * @param result Contains an updated Notes list and an "action" indicating
+     *               whether a Note was "inserted (created)", "changed", "moved",
+     *               or "removed". It also contains the updated Note's
+     *               old and new RecyclerView position index. The action information
+     *               comes from the FirestoreNoteRepository getAllNotes EventListener.
+     */
+    public void setFirestoreListenerResult(FirestoreListenerResult result) {
+        this.notes = result.getNotes();
+        String action = result.getNotificationAction().getAction();
+        switch (action) {
+            case NotificationAction.ACTION_INSERTED:
+                notifyItemInserted(result.getNotificationAction().getNewIndex());
+                break;
+
+            case NotificationAction.ACTION_CHANGED:
+                notifyItemChanged(result.getNotificationAction().getOldIndex());
+                break;
+
+            case NotificationAction.ACTION_MOVED:
+                notifyItemChanged(result.getNotificationAction().getOldIndex());
+                notifyItemMoved(result.getNotificationAction().getOldIndex(),
+                        result.getNotificationAction().getNewIndex());
+                break;
+
+            case NotificationAction.ACTION_REMOVED:
+                notifyItemRemoved(result.getNotificationAction().getOldIndex());
+                break;
+
+            default:
+                Timber.e("setFirestoreListenerResult(): Invalid NotificationAction");
+        }
     }
 
-    public Note getNoteAt(int position) {
+    public Note getNote(int position) {
         return notes.get(position);
     }
 
     class NoteHolder extends RecyclerView.ViewHolder {
-        private TextView tvTitle;
-        private TextView tvDescription;
-        private TextView tvPriority;
+        private final TextView tvTitle;
+        private final TextView tvDescription;
+        private final TextView tvPriority;
 
-        public NoteHolder(@NonNull View itemView) {
+        NoteHolder(@NonNull View itemView) {
             super(itemView);
             tvTitle = itemView.findViewById(R.id.tvTitle);
             tvDescription = itemView.findViewById(R.id.tvDescription);
@@ -67,7 +108,7 @@ public class NoteAdapter extends Adapter<NoteAdapter.NoteHolder> {
                 public void onClick(View v) {
                     int position = getAdapterPosition();
                     Note selectedNote = notes.get(position);
-                    if (mListener != null && position != RecyclerView.NO_POSITION) {
+                    if (mListener != null) {
                         mListener.onNoteClick(selectedNote, position);
                     }
                 }
@@ -76,7 +117,7 @@ public class NoteAdapter extends Adapter<NoteAdapter.NoteHolder> {
     }
 
     public interface onNoteClickListener {
-        void onNoteClick(Note note, int position);
+        void onNoteClick(Note note, @SuppressWarnings("unused") int position);
     }
 
     public void setOnNoteClickListener(onNoteClickListener listener) {
